@@ -1,64 +1,37 @@
-from math import cos, sin, log, exp
+"""
+Contient toutes les fonctions étudiées
+- fi : i-ème fonction
+- ai : suite des coefficients du développement limité / de la série entière
+       (sous réserve d'existence) de la i-ème fonction
+"""
+
+from math import cos, sin, log, exp, pi
 from utils import fact
 
 
-f0 = lambda x: 1/(1+x**2) # runge
-f1 = lambda x: 1/(1-x)
-f2 = lambda x: cos(x)
-f3 = lambda x: sin(x)
-f4 = lambda x: -log(x**2 + 1) + 4
-f5 = lambda x: exp(x)
+f0 = lambda x: 1 / (1 + x**2) # Runge
+a0 = lambda n: (-1)**(n / 2) if n % 2 == 0 else 0
 
-# TODO: gagner en complexité en utilisant l'algorithme de Horner par exemple
+f1 = lambda x: 1 / (1 - x)
+a1 = lambda n: 1
 
-def dl_f0(order: int, x: float) -> float:
-    """
-    Evaluation naïve en x de la partie régulière du DL de f0 à l'ordre donné
-    Paramètres :
-    - order : ordre du DL
-    - x : valeur d'évaluation
-    Retour : float
-    """
-    s = 0
-    for n in range(order + 1):
-        s = s + (-1)**n * x ** (2*n)
-    return s
+f2 = lambda x: sin(x)
+a2 = lambda n: (-1)**((n - 1) / 2) / fact(n) if n % 2 == 1 else 0
 
-def dl_f1(order: int, x: float) -> float:
-    """
-    Evaluation naïve en x de la partie régulière du DL de f0 à l'ordre donné
-    Paramètres :
-    - order : ordre du DL
-    - x : valeur d'évaluation
-    Retour : float
-    """
-    s = 0
-    for n in range(order + 1):
-        s = s + x ** (n)
-    return s
+f3 = lambda x: exp(x)
+a3 = lambda n: 1 / fact(n)
 
-def dl_f2(order: int, x: float) -> float:
-    """
-    Evaluation naïve en x de la partie régulière du DL de f0 à l'ordre donné
-    Paramètres :
-    - order : ordre du DL
-    - x : valeur d'évaluation
-    Retour : float
-    """
-    s = 0
-    for n in range(order + 1):
-        s = s + (-1)**n * (x ** (2*n)) / fact(2*n)
-    return s
+f4 = lambda x: log(1 + x)
+a4 = lambda n: (-1)**(n + 1) / n  if n != 0 else 0
 
-def dl_f5(order: int, x: float) -> float:
-    """
-    Evaluation naïve en x de la partie régulière du DL de f0 à l'ordre donné
-    Paramètres :
-    - order : ordre du DL
-    - x : valeur d'évaluation
-    Retour : float
-    """
-    s = 0
-    for n in range(order + 1):
-        s = s + 1/fact(n) * x**n
-    return s
+f5 = lambda x: 1 / (1 + x)
+a5 = lambda n: (-1)**n
+
+f6 = lambda x: cos(x) * exp(x)
+a6 = lambda n: (2**(n / 2) * cos(n * pi / 4)) / fact(n)
+
+f7 = lambda x: exp(-x) * (cos(x) + sin(x))
+a7 = lambda n: (2**(n / 2) * cos(n * pi / 4)) / fact(n)
+
+f8 = lambda x: -log(x**2 + 1) + x
+f9 = lambda x: exp(-1 / x) if x > 0 else 0

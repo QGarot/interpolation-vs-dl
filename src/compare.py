@@ -1,43 +1,55 @@
+"""
+Outil de comparaison des deux méthodes d'approximation polynomiale
+"""
+
 import numpy as np
-from utils import inf_norm, get_interpolation_set
-from neville_aitken import get_xj, neville
+from utils import inf_norm
+from neville_aitken import get_xj, neville, get_interpolation_set
 import matplotlib.pyplot as plt
+from serie import horner
 
 
-def inter_vs_dl(f: callable, dl: callable, order: int, R: float) -> None:
+def inter_vs_serie(f: callable, a: callable, order: int, R: float, log: bool = False) -> None:
     """
     Compare les erreurs d'approximation
     Paramètres :
     - f : fonction étudiée
-    - dl : développement limité de la fonction f (dans l'intervalle de convergence....)
+    - a : suite des coefficients du développement limité de la fonction f
     - order : ordre du Dl ET nombre de points d'interpolation
     - R : rayon permettant de définir l'intervalle d'étude
+    Retour : None
     """
     # Ordres
     n = []
 
     # Erreurs d'approximation mesurées avec la norme infinie
     err_inter = []
-    err_dl = []
+    err_serie = []
 
     # Initialisation de la mesure de l'erreur pour chaque itération
-    norm = None
+    err = None
 
     # On regarde comment se comporte l'erreur lorsque l'ordre augmente
-    for i in range(1, order + 1):
+    for i in range(0, order + 1):
         n.append(i)
 
         # Interpolation
-        xj = get_xj(i, R)
+        xj = get_xj(i + 1, R)
         set = get_interpolation_set(f, xj)
         norm = inf_norm(lambda x: f(x) - neville(set, x), R)
         err_inter.append(norm)
 
         # DL
-        norm = inf_norm(lambda x: f(x) - dl(i, x), R)
-        err_dl.append(norm)
+        coefs = [a(k) for k in range(0, i + 1)] # Peut être défini en dehors de la boucle principale pour éviter les calculs redondants
+        norm = inf_norm(lambda x: f(x) - horner(coefs, x), R)
+        err_serie.append(norm)
 
-    plt.plot(n, err_inter, label="Erreur d'interpolation")
-    plt.plot(n, err_dl, label="Erreur DL")
+    if log:
+        plt.plot(n, np.log10(err_inter), marker=".", linestyle=":", label="$\phi$")
+        plt.plot(n, np.log10(err_serie), marker=".", linestyle=":", label="$\psi$")
+    else:
+        plt.plot(n, err_inter, marker=".", linestyle=":", label="$\phi$")
+        plt.plot(n, err_serie, marker=".", linestyle=":", label="$\psi$")
+        
     plt.legend()
     plt.show()

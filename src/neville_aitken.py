@@ -1,7 +1,12 @@
+"""
+Contient les fonctions relatives à la méthode de Neville-Aitken
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from math import cos, pi, floor
-from utils import inf_norm, get_interpolation_set
+from utils import inf_norm
+
 
 def neville(set: list[tuple], x: float) -> float:
     """
@@ -11,7 +16,7 @@ def neville(set: list[tuple], x: float) -> float:
     Retour : le polynôme interpolateur évalué en x selon le schéma de Neville-Aitken
     """
 
-    n = len(set) - 1
+    n = len(set) - 1 # ordre de l'interpolation
     p = np.zeros((n + 1, n + 1))
 
     # Initialisation :
@@ -24,6 +29,17 @@ def neville(set: list[tuple], x: float) -> float:
             p[i, k] = ((set[i + k][0] - x) * p[i, k - 1] - (set[i][0] - x) * p[i + 1, k - 1]) / (set[i + k][0] - set[i][0])
 
     return p[0, n]
+
+def get_interpolation_set(f: callable, xj: list) -> list[tuple]:
+    """
+    Retourne les points d'interpolation (xj, f(xj))
+    Paramètres :
+    - f : fonction dont on souhaite déterminer les points d'interpolation associés aux xj
+    - xj : tableau contenant les abscisses des points d'interpolation
+    Retour : [(x0, f(x0)), (x1, f(x1)), ..., (xn, f(xn))]
+    """
+    yj = [f(x) for x in xj]
+    return [(xj[j], yj[j]) for j in range(len(xj))]
         
 def display_interpolation(f: callable, xj: list, R: float) -> None:
     """
@@ -34,34 +50,34 @@ def display_interpolation(f: callable, xj: list, R: float) -> None:
     - R : rayon de l'intervalle sur lequel on souhaite reprensenter les résultats
     Retour : None
     """
-    n = floor(R) * 20
+    n = floor(R * 100) # nombre de points
     pts = np.linspace(-R, R, n)
 
-    # Initialisation et affichage des points d'interpolation
+    # Initialisation (et affichage) des points d'interpolation
     #yj = [f(x) for x in xj]
     set = get_interpolation_set(f, xj)
-    #plt.plot(xj, yj, color="tab:orange", marker="o", linestyle="", label="Points d'interpolation")
+    #plt.plot(xj, yj, color="tab:orange", marker="o", linestyle="", label="Nœuds")
 
     # Affichage de la fonction
     fx = np.array([f(x) for x in pts])
-    plt.plot(pts, fx, color="tab:blue", label="f")
+    plt.plot(pts, fx, color="tab:blue", label="$f$")
 
     # Affichage du polynôme d'interpolation
     p = np.array([neville(set, x) for x in pts])
-    plt.plot(pts, p, color="tab:green", linestyle="--", label="Interpolation polynomiale de f")
+    plt.plot(pts, p, color="tab:orange", linestyle="--", label="$P_{"+str(len(xj) - 1)+"}f$")
 
-    plt.legend()
+    plt.legend(loc="upper right")
     plt.show()
 
-def get_xj(n: int, R: float = 1) -> list:
+def get_xj(m: int, R: float = 1) -> list:
     """
     Retourne les points (xj) dans l'intervalle [-R, R] pour avoir la meilleure interpolation
     Paramètre :
-    - n : nombre de points souhaités
+    - m : nombre de points souhaités
     - R : rayon de l'intervalle dans lequel les points doivent être choisis
     Retour : une liste de points
     """
-    return [cos((2*i + 1) * pi / (2*n + 2)) * R for i in range(n + 1)]
+    return [cos((2*i + 1) * pi / (2 * m)) * R for i in range(m)]
 
 def error(f: callable, tests: int, R: float) -> None:
     """
@@ -70,17 +86,17 @@ def error(f: callable, tests: int, R: float) -> None:
     - f : fonction étudiée
     - tests : nombre de tests à affectuer
     - R : rayon permettant de définir l'intervalle sur lequel on fait l'étude
+    Retour : None
     """
     n = []
     err = []
     norm = None
-    for i in range(1, tests + 1):
+    for i in range(0, tests):
         n.append(i)
 
         # Jeu de points
         xj = get_xj(i, R)
-        yj = [f(x) for x in xj]
-        set = [(xj[j], yj[j]) for j in range(len(xj))]
+        set = get_interpolation_set(f, xj)
 
         norm = inf_norm(lambda x: f(x) - neville(set, x), R)
         err.append(norm)
